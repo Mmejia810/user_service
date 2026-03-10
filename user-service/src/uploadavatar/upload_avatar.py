@@ -44,16 +44,13 @@ def lambda_handler(event, context):
             Bucket=BUCKET_NAME,
             Key=filename,
             Body=image_bytes,
-            ContentType=file_type
+            ContentType=file_type,
         )
 
-        # 6. Crear URL pública
         image_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{filename}"
 
-        # 7. Acceder a la tabla DynamoDB
         table = dynamodb.Table(TABLE_NAME)
 
-        # 8. Buscar usuario para obtener documento
         response = table.query(
             KeyConditionExpression=Key('uuid').eq(user_id)
         )

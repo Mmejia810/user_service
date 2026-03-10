@@ -11,7 +11,6 @@ def lambda_handler(event, context):
         user_id = event['pathParameters']['user_id']
         documento = event['pathParameters']['documento']
 
-        # Obtener usuario
         response = table.get_item(
             Key={
                 'uuid': user_id,
@@ -27,6 +26,11 @@ def lambda_handler(event, context):
 
         user = response['Item']
 
+        # Imagen (si no existe usa placeholder)
+        image = user.get('image')
+        if not image:
+            image = "https://via.placeholder.com/150"
+
         result = {
             "name": user.get('nombre'),
             "lastName": user.get('apellido'),
@@ -34,7 +38,7 @@ def lambda_handler(event, context):
             "documento": user.get('documento'),
             "direccion": user.get('dirección', ""),
             "telefono": user.get('teléfono', ""),
-            "image": user.get('image', "https://via.placeholder.com/150")
+            "image": image
         }
 
         return {
