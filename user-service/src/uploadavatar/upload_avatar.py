@@ -1,0 +1,97 @@
+import json
+import os
+import boto3
+import base64
+import uuid
+from boto3.dynamodb.conditions import Key
+
+# AWS
+s3 = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+
+BUCKET_NAME = os.environ.get('BUCKET_NAME')
+TABLE_NAME = os.environ.get('TABLE_NAME')
+
+def lambda_handler(event, context):
+    try:
+
+        # 1. Obtener user_id desde la URL
+        user_id = event["pathParameters"]["user_id"]
+
+        # 2. Obtener body
+        if 'body' in event:
+            body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
+        else:
+            body = event
+
+        image_base64 = body["image"]
+        file_type = body["fileType"]
+
+        # 3. Decodificar imagen
+        image_bytes = base64.b64decode(image_base64)
+
+        # 4. Crear nombre único
+        extension = ".jpg"
+        if file_type == "image/png":
+            extension = ".png"
+        elif file_type == "image/jpeg":
+            extension = ".jpeg"
+
+        filename = str(uuid.uuid4()) + extension
+
+        # 5. Subir a S3
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Key=filename,
+            Body=image_bytes,
+            ContentType=file_type
+        )
+
+        # 6. Crear URL pública
+        image_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{filename}"
+
+        # 7. Acceder a la tabla DynamoDB
+        table = dynamodb.Table(TABLE_NAME)
+
+        # 8. Buscar usuario para obtener documento
+        response = table.query(
+            KeyConditionExpression=Key('uuid').eq(user_id)
+        )
+
+        items = response.get("Items", [])
+
+        if not items:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"error": "Usuario no encontrado"})
+            }
+
+        documento = items[0]["documento"]
+
+        # 9. Actualizar avatar en DynamoDB
+        table.update_item(
+            Key={
+                "uuid": user_id,
+                "documento": documento
+            },
+            UpdateExpression="SET image = :img",
+            ExpressionAttributeValues={
+                ":img": image_url
+            }
+        )
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "Avatar subido correctamente",
+                "image": image_url
+            })
+        }
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "error": str(e)
+            })
+        }
