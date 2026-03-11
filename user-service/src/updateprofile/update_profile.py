@@ -8,13 +8,11 @@ table = dynamodb.Table(os.environ.get('TABLE_NAME', 'users-table'))
 def lambda_handler(event, context):
     try:
         user_id = event['pathParameters']['user_id']
-        documento = event['pathParameters']['documento']
-        
         body = json.loads(event['body'])
 
         # Obtener usuario actual
         response = table.get_item(
-            Key={'uuid': user_id, 'documento': documento}
+            Key={'uuid': user_id}
         )
 
         if 'Item' not in response:
@@ -26,17 +24,13 @@ def lambda_handler(event, context):
         user = response['Item']
 
         table.update_item(
-            Key={'uuid': user_id, 'documento': documento},
-            UpdateExpression="set nombre=:n, apellido=:a, #dir=:d, #tel=:p",
-            ExpressionAttributeNames={
-                "#dir": "dirección",
-                "#tel": "teléfono"
-            },
+            Key={'uuid': user_id},
+            UpdateExpression="SET nombre=:n, apellido=:a, direccion=:d, telefono=:p",
             ExpressionAttributeValues={
                 ':n': body.get('name', user.get('nombre')),
                 ':a': body.get('lastName', user.get('apellido')),
-                ':d': body.get('address', user.get('dirección', '')),
-                ':p': body.get('phone', user.get('teléfono', ''))
+                ':d': body.get('direccion', user.get('direccion', '')),
+                ':p': body.get('telefono', user.get('telefono', ''))
             }
         )
 

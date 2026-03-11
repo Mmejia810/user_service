@@ -15,10 +15,10 @@ TABLE_NAME = os.environ.get('TABLE_NAME')
 def lambda_handler(event, context):
     try:
 
-        # 1. Obtener user_id desde la URL
+        # Obtener user_id desde la URL
         user_id = event["pathParameters"]["user_id"]
 
-        # 2. Obtener body
+        # Obtener body
         if 'body' in event:
             body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         else:
@@ -27,10 +27,10 @@ def lambda_handler(event, context):
         image_base64 = body["image"]
         file_type = body["fileType"]
 
-        # 3. Decodificar imagen
+        # Decodificar imagen
         image_bytes = base64.b64decode(image_base64)
 
-        # 4. Crear nombre único
+        # Crear nombre único
         extension = ".jpg"
         if file_type == "image/png":
             extension = ".png"
@@ -39,7 +39,7 @@ def lambda_handler(event, context):
 
         filename = str(uuid.uuid4()) + extension
 
-        # 5. Subir a S3
+        # Subir a S3
         s3.put_object(
             Bucket=BUCKET_NAME,
             Key=filename,
@@ -65,17 +65,16 @@ def lambda_handler(event, context):
 
         documento = items[0]["documento"]
 
-        # 9. Actualizar avatar en DynamoDB
+        # Actualizar avatar en DynamoDB
         table.update_item(
-            Key={
-                "uuid": user_id,
-                "documento": documento
-            },
-            UpdateExpression="SET image = :img",
-            ExpressionAttributeValues={
-                ":img": image_url
-            }
-        )
+          Key={
+        "uuid": user_id
+         },
+         UpdateExpression="SET image = :img",
+    ExpressionAttributeValues={
+        ":img": image_url
+    }
+)
 
         return {
             "statusCode": 200,

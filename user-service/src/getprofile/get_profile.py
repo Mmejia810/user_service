@@ -9,12 +9,10 @@ table = dynamodb.Table(TABLE_NAME)
 def lambda_handler(event, context):
     try:
         user_id = event['pathParameters']['user_id']
-        documento = event['pathParameters']['documento']
 
         response = table.get_item(
             Key={
-                'uuid': user_id,
-                'documento': documento
+                'uuid': user_id
             }
         )
 
@@ -26,19 +24,14 @@ def lambda_handler(event, context):
 
         user = response['Item']
 
-        # Imagen (si no existe usa placeholder)
-        image = user.get('image')
-        if not image:
-            image = "https://via.placeholder.com/150"
-
         result = {
             "name": user.get('nombre'),
             "lastName": user.get('apellido'),
-            "email": user.get('correo electrónico'),
+            "email": user.get('email'),
             "documento": user.get('documento'),
-            "direccion": user.get('dirección', ""),
-            "telefono": user.get('teléfono', ""),
-            "image": image
+            "direccion": user.get('direccion', ""),
+            "telefono": user.get('telefono', ""),
+            "image": user.get('image', "https://via.placeholder.com/150")
         }
 
         return {
