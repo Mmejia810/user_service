@@ -4,7 +4,7 @@ resource "aws_lambda_function" "register_lambda" {
   function_name    = "register-user-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "register.lambda_handler"
-  runtime          = "python3.12"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("../../terraform/register.zip")
 
   environment {
@@ -29,7 +29,7 @@ resource "aws_lambda_function" "login_lambda" {
   function_name    = "login-user-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "login.lambda_handler"
-  runtime          = "python3.12"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("../../terraform/login.zip")
 
   environment {
@@ -54,7 +54,7 @@ resource "aws_lambda_function" "get_profile" {
   function_name    = "get-profile-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "get_profile.lambda_handler"
-  runtime          = "python3.12"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("../../terraform/get_profile.zip")
 
   environment {
@@ -102,7 +102,7 @@ resource "aws_lambda_function" "upload_avatar" {
   function_name    = "upload-avatar-user-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "upload_avatar.lambda_handler"
-  runtime          = "python3.12"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("../../terraform/upload_avatar.zip")
 
   environment {
