@@ -2,24 +2,46 @@ import json
 import os
 import boto3
 import jwt
-import datetime
 import hashlib
-from boto3.dynamodb.conditions import Attr
+import hmac
+import datetime
+from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('users-table')
+table = dynamodb.Table(os.environ.get('TABLE_NAME', 'users-table'))
 
-SECRET_KEY = os.environ.get('JWT_SECRET', 'clave-de-emergencia')
+SECRET_KEY = os.environ.get('JWT_SECRET')
+if not SECRET_KEY:
+    raise RuntimeError("JWT_SECRET no está configurado en las variables de entorno")
+
+
+def verificar_password(password: str, stored: str) -> bool:
+    # Separa el salt y el hash guardado en DynamoDB
+    try:
+        salt, stored_hash = stored.split(':')
+        hashed_input = hmac.new(salt.encode(), password.encode('utf-8'), hashlib.sha256).hexdigest()
+        # Comparación segura que evita timing attacks
+        return hmac.compare_digest(hashed_input, stored_hash)
+    except Exception:
+        return False
+
 
 def lambda_handler(event, context):
     try:
         body = json.loads(event['body'])
-        email = body['correo electrónico']
-        password = body['contraseña']
+        email = body.get('email')
+        password = body.get('password')
 
-        # Buscar usuario en DynamoDB
-        response = table.scan(
-            FilterExpression=Attr('correo electrónico').eq(email)
+        if not email or not password:
+            return {
+                "statusCode": 400,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Los campos 'email' y 'password' son obligatorios"})
+            }
+
+        response = table.query(
+            IndexName='email-index',
+            KeyConditionExpression=Key('email').eq(email)
         )
 
         items = response.get('Items', [])
@@ -27,32 +49,33 @@ def lambda_handler(event, context):
         if not items:
             return {
                 "statusCode": 401,
-                "body": json.dumps({"error": "Usuario no encontrado"})
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Credenciales inválidas"})
             }
 
         user = items[0]
 
-        # Hashear la contraseña ingresada
-        hashed_input = hashlib.sha256(password.encode()).hexdigest()
-
-        # Comparar hash
-        if user['contraseña'] != hashed_input:
+        # Verificar con el mismo salt que se usó al registrar
+        if not verificar_password(password, user['password']):
             return {
                 "statusCode": 401,
-                "body": json.dumps({"error": "Contraseña incorrecta"})
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Credenciales inválidas"})
             }
 
-        # Generar JWT
+        now = datetime.datetime.now(datetime.timezone.utc)
         payload = {
             "uuid": user['uuid'],
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
-            "iat": datetime.datetime.utcnow()
+            "email": user['email'],
+            "exp": now + datetime.timedelta(hours=1),
+            "iat": now
         }
 
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
         return {
             "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
                 "message": "Login exitoso",
                 "token": token
@@ -60,7 +83,11 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
+     import traceback
+     print(f"[ERROR] lambda_handler: {e}")
+     print(traceback.format_exc())  # ← Agrega esto
+     return {
+        "statusCode": 500,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"error": "Error interno del servidor"})
+    }
