@@ -1,11 +1,11 @@
 # Lambda Register
 resource "aws_lambda_function" "register_lambda" {
-  filename         = "../../terraform/register.zip"
+  filename         = "${path.module}/register.zip"
   function_name    = "register-user-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "register.lambda_handler"
   runtime          = "python3.12"
-  source_code_hash = filebase64sha256("../../terraform/register.zip")
+  source_code_hash = filebase64sha256("${path.module}/register.zip")
 
   environment {
     variables = {
@@ -22,15 +22,14 @@ resource "aws_lambda_permission" "apigw_lambda" {
   principal     = "apigateway.amazonaws.com"
 }
 
-
 # Lambda Login
 resource "aws_lambda_function" "login_lambda" {
-  filename         = "../../terraform/login.zip"
+  filename         = "${path.module}/login.zip"
   function_name    = "login-user-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "login.lambda_handler"
   runtime          = "python3.12"
-  source_code_hash = filebase64sha256("../../terraform/login.zip")
+  source_code_hash = filebase64sha256("${path.module}/login.zip")
 
   environment {
     variables = {
@@ -47,15 +46,14 @@ resource "aws_lambda_permission" "apigw_login" {
   principal     = "apigateway.amazonaws.com"
 }
 
-
 # Lambda Get Profile
 resource "aws_lambda_function" "get_profile" {
-  filename         = "../../terraform/get_profile.zip"
+  filename         = "${path.module}/get_profile.zip"
   function_name    = "get-profile-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "get_profile.lambda_handler"
   runtime          = "python3.9"
-  source_code_hash = filebase64sha256("../../terraform/get_profile.zip")
+  source_code_hash = filebase64sha256("${path.module}/get_profile.zip")
 
   environment {
     variables = {
@@ -71,15 +69,14 @@ resource "aws_lambda_permission" "apigw_get" {
   principal     = "apigateway.amazonaws.com"
 }
 
-
 # Lambda Update Profile
 resource "aws_lambda_function" "update_profile" {
-  filename         = "../../terraform/update_profile.zip"
+  filename         = "${path.module}/update_profile.zip"
   function_name    = "update-profile-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "update_profile.lambda_handler"
   runtime          = "python3.12"
-  source_code_hash = filebase64sha256("../../terraform/update_profile.zip")
+  source_code_hash = filebase64sha256("${path.module}/update_profile.zip")
 
   environment {
     variables = {
@@ -95,15 +92,14 @@ resource "aws_lambda_permission" "apigw_update" {
   principal     = "apigateway.amazonaws.com"
 }
 
-
 # Lambda Upload Avatar
 resource "aws_lambda_function" "upload_avatar" {
-  filename         = "../../terraform/upload_avatar.zip"
+  filename         = "${path.module}/upload_avatar.zip"
   function_name    = "upload-avatar-user-lambda"
   role             = aws_iam_role.lambda_role.arn
   handler          = "upload_avatar.lambda_handler"
   runtime          = "python3.12"
-  source_code_hash = filebase64sha256("../../terraform/upload_avatar.zip")
+  source_code_hash = filebase64sha256("${path.module}/upload_avatar.zip")
 
   environment {
     variables = {
