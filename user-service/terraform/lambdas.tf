@@ -82,7 +82,8 @@ resource "aws_lambda_function" "update_profile" {
 
   environment {
     variables = {
-      TABLE_NAME = aws_dynamodb_table.users_table.name
+      TABLE_NAME             = aws_dynamodb_table.users_table.name
+      NOTIFICATION_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/825982958931/notification-email-sqs"
     }
   }
 }

@@ -1,8 +1,10 @@
 import json
 import boto3
 import os
+from datetime import datetime, timezone
 
 dynamodb = boto3.resource('dynamodb')
+sqs = boto3.client('sqs', region_name='us-east-1')
 table = dynamodb.Table(os.environ.get('TABLE_NAME', 'users-table'))
 
 def lambda_handler(event, context):
@@ -33,6 +35,20 @@ def lambda_handler(event, context):
                 ':p': body.get('telefono', user.get('telefono', ''))
             }
         )
+
+        # Enviar notificación USER.UPDATE
+        try:
+            sqs.send_message(
+                QueueUrl=os.environ.get('NOTIFICATION_QUEUE_URL'),
+                MessageBody=json.dumps({
+                    "type": "USER.UPDATE",
+                    "data": {
+                        "date": datetime.now(timezone.utc).isoformat()
+                    }
+                })
+            )
+        except Exception as notif_error:
+            print(f"[ERROR] Notificación USER.UPDATE falló: {notif_error}")
 
         return {
             "statusCode": 200,
