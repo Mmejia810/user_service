@@ -8,6 +8,7 @@ import datetime
 from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
+sqs = boto3.client('sqs', region_name='us-east-1')
 table = dynamodb.Table(os.environ.get('TABLE_NAME', 'users-table'))
 
 SECRET_KEY = os.environ.get('JWT_SECRET')
@@ -16,11 +17,9 @@ if not SECRET_KEY:
 
 
 def verificar_password(password: str, stored: str) -> bool:
-    # Separa el salt y el hash guardado en DynamoDB
     try:
         salt, stored_hash = stored.split(':')
         hashed_input = hmac.new(salt.encode(), password.encode('utf-8'), hashlib.sha256).hexdigest()
-        # Comparación segura que evita timing attacks
         return hmac.compare_digest(hashed_input, stored_hash)
     except Exception:
         return False
@@ -28,8 +27,8 @@ def verificar_password(password: str, stored: str) -> bool:
 
 def lambda_handler(event, context):
     try:
-        body = json.loads(event['body'])
-        email = body.get('email')
+        body     = json.loads(event['body'])
+        email    = body.get('email')
         password = body.get('password')
 
         if not email or not password:
@@ -55,7 +54,6 @@ def lambda_handler(event, context):
 
         user = items[0]
 
-        # Verificar con el mismo salt que se usó al registrar
         if not verificar_password(password, user['password']):
             return {
                 "statusCode": 401,
@@ -65,29 +63,43 @@ def lambda_handler(event, context):
 
         now = datetime.datetime.now(datetime.timezone.utc)
         payload = {
-            "uuid": user['uuid'],
+            "uuid":  user['uuid'],
             "email": user['email'],
-            "exp": now + datetime.timedelta(hours=1),
-            "iat": now
+            "exp":   now + datetime.timedelta(hours=1),
+            "iat":   now
         }
 
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+        # Enviar notificación USER.LOGIN
+        try:
+            sqs.send_message(
+                QueueUrl=os.environ.get('NOTIFICATION_QUEUE_URL'),
+                MessageBody=json.dumps({
+                    "type": "USER.LOGIN",
+                    "data": {
+                        "date": now.isoformat()
+                    }
+                })
+            )
+        except Exception as notif_error:
+            print(f"[ERROR] Notificación USER.LOGIN falló: {notif_error}")
 
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
                 "message": "Login exitoso",
-                "token": token
+                "token":   token
             })
         }
 
     except Exception as e:
-     import traceback
-     print(f"[ERROR] lambda_handler: {e}")
-     print(traceback.format_exc())  # ← Agrega esto
-     return {
-        "statusCode": 500,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps({"error": "Error interno del servidor"})
-    }
+        import traceback
+        print(f"[ERROR] lambda_handler: {e}")
+        print(traceback.format_exc())
+        return {
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": "Error interno del servidor"})
+        }
