@@ -104,6 +104,20 @@ def lambda_handler(event, context):
                 sqs_errors.append(f"{request_type}: {str(sqs_error)}")
                 print(f"[ERROR] SQS {request_type} falló para usuario {user_uuid}: {sqs_error}")
 
+        # Enviar notificación WELCOME
+        try:
+            sqs.send_message(
+                QueueUrl=os.environ.get('NOTIFICATION_QUEUE_URL'),
+                MessageBody=json.dumps({
+                    "type": "WELCOME",
+                    "data": {
+                        "fullName": f"{data['nombre']} {data['apellido']}"
+                    }
+                })
+            )
+        except Exception as notif_error:
+            print(f"[ERROR] Notificación WELCOME falló: {notif_error}")
+
         response_body = {"message": "Registro exitoso", "uuid": user_uuid}
         if sqs_errors:
             response_body["sqs_warnings"] = sqs_errors

@@ -9,8 +9,9 @@ resource "aws_lambda_function" "register_lambda" {
 
   environment {
     variables = {
-      TABLE_NAME = aws_dynamodb_table.users_table.name
-      QUEUE_URL  = aws_sqs_queue.card_request_queue.id
+      TABLE_NAME             = aws_dynamodb_table.users_table.name
+      QUEUE_URL              = aws_sqs_queue.card_request_queue.id
+      NOTIFICATION_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/825982958931/notification-email-sqs" # ← AGREGAR
     }
   }
 }
@@ -31,10 +32,11 @@ resource "aws_lambda_function" "login_lambda" {
   runtime          = "python3.12"
   source_code_hash = filebase64sha256("${path.module}/login.zip")
 
-  environment {
+    environment {
     variables = {
-      TABLE_NAME = aws_dynamodb_table.users_table.name
-      JWT_SECRET = aws_secretsmanager_secret_version.jwt_secret_value.secret_string
+      TABLE_NAME             = aws_dynamodb_table.users_table.name
+      JWT_SECRET             = aws_secretsmanager_secret_version.jwt_secret_value.secret_string
+      NOTIFICATION_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/825982958931/notification-email-sqs"  # ← AGREGAR
     }
   }
 }
