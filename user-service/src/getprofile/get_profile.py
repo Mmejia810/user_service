@@ -19,6 +19,12 @@ def lambda_handler(event, context):
         if 'Item' not in response:
             return {
                 "statusCode": 404,
+                 "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "Usuario no encontrado"})
             }
 
@@ -36,11 +42,23 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
+             "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps(result)
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
+             "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps({"error": str(e)})
         }

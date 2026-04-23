@@ -60,6 +60,12 @@ def lambda_handler(event, context):
         if not items:
             return {
                 "statusCode": 404,
+                 "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "Usuario no encontrado"})
             }
 
@@ -78,6 +84,12 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
+             "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps({
                 "message": "Avatar subido correctamente",
                 "image": image_url
@@ -87,6 +99,12 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             "statusCode": 500,
+             "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps({
                 "error": str(e)
             })

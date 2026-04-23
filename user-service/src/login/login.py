@@ -33,7 +33,12 @@ def lambda_handler(event, context):
         if not email or not password:
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                 "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "Los campos 'email' y 'password' son obligatorios"})
             }
 
@@ -47,7 +52,12 @@ def lambda_handler(event, context):
         if not items:
             return {
                 "statusCode": 401,
-                "headers": {"Content-Type": "application/json"},
+                 "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "Credenciales inválidas"})
             }
 
@@ -56,7 +66,12 @@ def lambda_handler(event, context):
         if not verificar_password(password, user['password']):
             return {
                 "statusCode": 401,
-                "headers": {"Content-Type": "application/json"},
+                "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "Credenciales inválidas"})
             }
 
@@ -89,7 +104,12 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+             "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps({
                 "message": "Login exitoso",
                 "token": token
@@ -103,6 +123,11 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
+             "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps({"error": "Error interno del servidor"})
         }

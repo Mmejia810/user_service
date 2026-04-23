@@ -45,21 +45,36 @@ def lambda_handler(event, context):
             if campo not in data:
                 return {
                     "statusCode": 400,
-                    "headers": {"Content-Type": "application/json"},
+                    "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                     "body": json.dumps({"error": f"Falta el campo obligatorio: '{campo}'"})
                 }
 
         if not validar_email(data['email']):
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "El formato del email es inválido"})
             }
 
         if not validar_password(data['password']):
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "La contraseña debe tener mínimo 8 caracteres"})
             }
 
@@ -72,7 +87,12 @@ def lambda_handler(event, context):
         if existing.get('Items'):
             return {
                 "statusCode": 409,
-                "headers": {"Content-Type": "application/json"},
+                "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
                 "body": json.dumps({"error": "El correo ya está registrado"})
             }
 
@@ -124,7 +144,12 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 201,
-            "headers": {"Content-Type": "application/json"},
+            "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
             "body": json.dumps(response_body)
         }
 
@@ -134,6 +159,11 @@ def lambda_handler(event, context):
      print(traceback.format_exc())  # ← Agrega esto
      return {
         "statusCode": 500,
-        "headers": {"Content-Type": "application/json"},
+         "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT"
+    },
         "body": json.dumps({"error": "Error interno del servidor"})
     }
