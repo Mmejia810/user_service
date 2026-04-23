@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "avatars_bucket" {
-  bucket = "users-avatar-banco-cerdos-2026-mau"
+  bucket = "users-avatar-banco-cerdos-2026-mauro"
 }
 resource "aws_s3_bucket_public_access_block" "avatars_public" {
   bucket = aws_s3_bucket.avatars_bucket.id
